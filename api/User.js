@@ -127,7 +127,7 @@ router.post("/signup", (req, res) => {
 //send verify email
 const sendVerifyEmail = ({ _id, email }, res) => {
   //url used for the mail
-  const currentUrl = "http://localhost:3001/";
+  const currentUrl = "http://localhost:3005/";
 
   const uniqueString = uuidv4() + _id;
 

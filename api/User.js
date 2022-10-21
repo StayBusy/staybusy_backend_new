@@ -1,6 +1,8 @@
 const express = require("express");
 const { find } = require("../models/User");
 const router = express.Router();
+const multer = require("multer");
+const ProfilePic = require("../models/profilePic");
 
 //mongodb user model
 const User = require("../models/User");
@@ -185,6 +187,7 @@ const sendVerifyEmail = ({ _id, email }, res) => {
       });
     });
 };
+
 //verify email route
 router.get("/verify/:userId/:uniqueString", (req, res) => {
   let { userId, uniqueString } = req.params;
@@ -343,6 +346,66 @@ router.post("/login", (req, res) => {
         });
       });
   }
+});
+
+// update user
+router.put("/update/:userId", (req, res) => {
+  // let { userId } = req.params;
+  User.findByIdAndUpdate({ _id: req.params.userId }, req.body, {
+    new: true,
+  })
+    .then((data) => {
+      res
+        .json({
+          status: "Success",
+          message: "Updated successfully!",
+          data: data,
+        })
+        .status(200);
+    })
+    .catch((err) => {
+      res.json({
+        status: "Failed",
+        message: "Invalid Credentials!",
+      });
+    });
+});
+
+// upload profile pic
+router.post("/uploadDp/:userId", (req, res) => {
+  //Setting storage engine
+  // using multer an npm package that help uploads images
+  console.log("sdfd");
+
+  // to get the buffer of the uploaded image and store it
+  const multerStorage = multer.memoryStorage();
+  const upload = multer({
+    storage: multerStorage,
+    dest: "./public/data/uploads/",
+  }).single("testImage");
+
+  upload(req, res, (err) => {
+    if (err) {
+      console.log(err);
+      res.send("An error was detected!");
+    } else {
+      console.log(req.file);
+      console.log(req.file.buffer);
+      User.findByIdAndUpdate(req.params.userId, {
+        image: {
+          // convert this buffer to base 64
+          data: new Buffer.from(req.file.buffer, "base64"),
+          mime: req.file.mimetype,
+        },
+      })
+        .then(() => res.send("successfully uploadeded"))
+        .catch((err) => {
+          console.log(err);
+          res.send("err " + err);
+        });
+    }
+  });
+  console.log("klkl");
 });
 
 module.exports = router;

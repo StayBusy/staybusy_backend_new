@@ -1,15 +1,50 @@
 // mongodb
 require("./config/db");
+const express = require("express");
 const app = require("express")();
 const port = 3005;
+const path = require("path");
 //cors
 const cors = require("cors");
 app.use(cors());
-const UserRouter = require("./api/User");
+
+// importing session and flash and cookieParse and morgan
+const session = require("express-session");
+const flash = require("connect-flash");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+
+// importing indexRouter
+const indexRouter = require("./routes/index");
+const UserRouter = require("./routes/User");
 
 // for accepting post form data
 const bodyParser = require("express").json;
 app.use(bodyParser());
+
+// view engine setup
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+// where the pictures will be stored
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/upload", express.static("upload"));
+
+// use session and flash and logger and cookieParser
+app.use(
+  session({
+    secret: "webslesson",
+    cookie: { maxAge: 60000 },
+    saveUninitialized: false.valueOf,
+    resave: false,
+  })
+);
+app.use(flash());
+app.use(logger("dev"));
+app.use(cookieParser());
+
+// to show the index view of the ejs and the app
+app.use("/", indexRouter);
 app.use("/user", UserRouter);
 app.listen(port, () => {
   console.log(`server started on port ${port}`);

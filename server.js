@@ -12,7 +12,7 @@ app.use(cors());
 const session = require("express-session");
 const flash = require("connect-flash");
 const cookieParser = require("cookie-parser");
-const logger = require("morgan");
+const morgan = require("morgan");
 
 // importing indexRouter
 const indexRouter = require("./routes/index");
@@ -39,13 +39,21 @@ app.use(
     resave: false,
   })
 );
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 app.use(flash());
-app.use(logger("dev"));
 app.use(cookieParser());
 
 // to show the index view of the ejs and the app
-app.use("/", indexRouter);
-app.use("/user", UserRouter);
+// app.use("/", indexRouter);
+// app.use("/user", UserRouter);
+
+// App Routes
+app.use('/api/auth', require('./routes/auth/auth.routes'));
+
 app.listen(port, () => {
   console.log(`server started on port ${port}`);
 });

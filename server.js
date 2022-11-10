@@ -1,26 +1,23 @@
-// mongodb
-require("./config/db");
+require("dotenv").config();
+require("express-async-errors");
+
 const express = require("express");
-const app = require("express")();
-const port = 3005;
 const path = require("path");
-//cors
 const cors = require("cors");
-app.use(cors());
+const morgan = require("morgan");
 
 // importing session and flash and cookieParse and morgan
 const session = require("express-session");
-const flash = require("connect-flash");
 const cookieParser = require("cookie-parser");
-const morgan = require("morgan");
 
-// importing indexRouter
-const indexRouter = require("./routes/index");
-const UserRouter = require("./routes/User");
+// mongoDB connection
+const connectDB = require("./config/db");
 
-// for accepting post form data
-const bodyParser = require("express").json;
-app.use(bodyParser());
+const app = express();
+
+//cors
+app.use(cors());
+app.use(express.json());
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -40,20 +37,40 @@ app.use(
   })
 );
 
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
 }
-
-app.use(flash());
-app.use(cookieParser());
 
 // to show the index view of the ejs and the app
 // app.use("/", indexRouter);
 // app.use("/user", UserRouter);
 
 // App Routes
-app.use('/api/auth', require('./routes/auth/auth.routes'));
+app.use("/api/auth", require("./routes/auth/auth.routes"));
 
-app.listen(port, () => {
-  console.log(`server started on port ${port}`);
-});
+// APP ErrorHandler
+const notFoundMiddleware = require("./middlewares/not-found")
+const errorHandlerMiddleware = require('./middlewares/error-handler')
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
+
+let DB;
+
+if (process.env.NODE_ENV === "development") {
+  DB = process.env.MONGODB_LOCAL;
+} else {
+  DB = process.env.MONGODB_URI;
+}
+
+const start = async () => {
+  const PORT = process.env.PORT || 3005;
+  try {
+    await connectDB(DB);
+    console.log("DB connected");
+    app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+start();

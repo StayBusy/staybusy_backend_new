@@ -62,7 +62,7 @@ const register = async (req, res) => {
 const verifyUser = async (req, res) => {
   const { verificationToken, email } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select('+verificationToken');
   if (user === null) {
     throw new UnauthenticatedError("User not found");
   }
@@ -73,7 +73,7 @@ const verifyUser = async (req, res) => {
 
   user.isVerified = true;
   user.verified = new Date();
-  user.verificationToken = "";
+  user.verificationToken = null;
   await user.save();
 
   res.status(StatusCodes.OK).json({ status: true, message: "Email verified" });

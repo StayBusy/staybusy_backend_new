@@ -1,5 +1,5 @@
 const { UnauthenticatedError } = require('../errors');
-const userModel = require('../models/user.model');
+const User = require('../models/User');
 const { isTokenValid } = require('../utils/jwt');
 
 const authenticationMiddleware = async (req, res, next) => {
@@ -15,7 +15,7 @@ const authenticationMiddleware = async (req, res, next) => {
     const decoded = await isTokenValid(token);
     const { email, id } = decoded;
 
-    const currentUser = await userModel.findOne({ email });
+    const currentUser = await User.findOne({ email });
     // console.log(currentUser);
 
     if (!currentUser) {

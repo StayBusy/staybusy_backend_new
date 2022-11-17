@@ -44,6 +44,8 @@ const UserSchema = new Schema({
   tags: { type: Array, default: [] },
   completed: { type: Boolean, default: false },
   image:  String ,
+  passwordToken: { type: String },
+  passwordTokenExpirationDate: { type: Date },
 });
 
 UserSchema.pre("save", async function (next) {

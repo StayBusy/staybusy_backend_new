@@ -6,6 +6,7 @@ const { BadRequestError, UnauthenticatedError } = require("../../errors");
 const { createJWT } = require("../../utils/jwt");
 const User = require("../../models/User");
 const sendVerificationEmail = require("../../utils/sendVerficationEmail");
+const sendResetPasswordEmail = require("../../utils/sendResetPasswordEmail");
 
 const validateEmailAndPassword = (req) => {
   const { errors } = validationResult(req);
@@ -51,6 +52,7 @@ const register = async (req, res) => {
     name: user.name,
     email: user.email,
     verificationToken: user.verificationToken,
+    origin
   });
 
   res.status(StatusCodes.CREATED).json({
@@ -62,7 +64,7 @@ const register = async (req, res) => {
 const verifyUser = async (req, res) => {
   const { verificationToken, email } = req.body;
 
-  const user = await User.findOne({ email }).select('+verificationToken');
+  const user = await User.findOne({ email }).select("+verificationToken");
   if (user === null) {
     throw new UnauthenticatedError("User not found");
   }
@@ -123,8 +125,85 @@ const login = async (req, res) => {
   });
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new BadRequestError("Provide valid email");
+  }
+
+  const user = await User.findOne({ email });
+
+  console.log(user);
+
+  if (user) {
+    const passwordToken = crypto.randomBytes(70).toString("hex");
+
+    const twentyMinutes = 1000 * 60 * 20;
+
+    const passwordTokenExpirationDate = new Date(Date.now() + twentyMinutes);
+
+    let origin;
+
+    if (process.env.NODE_ENV === "development") {
+      origin = "http://localhost:3005";
+    } else {
+      origin = "http://app.com";
+    }
+
+    console.log(origin)
+
+   await sendResetPasswordEmail({
+      name: user?.lastname,
+      email: user.email,
+      token: passwordToken,
+      origin
+    });
+
+    user.passwordToken = passwordToken;
+    user.passwordTokenExpirationDate = passwordTokenExpirationDate;
+    await user.save();
+  }
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "Email sent",
+  });
+};
+
+const resetPassword = async (req, res) => {
+  const {token, email, password} = req.body
+  if(!token || !email || !password) {
+    throw new   BadRequestError('All fields required')
+  }
+
+  const user = await User.findOne({email})
+
+  console.log(user)
+
+  if(user){
+    const currentUser = new Date()
+
+    console.log(currentUser, user.passwordTokenExpirationDate)
+
+    if(user.passwordToken === token && user.passwordTokenExpirationDate > currentUser){
+      user.password = password
+      user.passwordToken = null
+      user.passwordTokenExpirationDate = null
+      await user.save()
+      res.status(StatusCodes.OK).json({
+        status: true,
+        message: "password reset"
+      });
+    }
+  }
+
+};
+
 module.exports = {
   register,
   login,
   verifyUser,
+  forgotPassword,
+  resetPassword,
 };

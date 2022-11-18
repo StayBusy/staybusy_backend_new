@@ -19,6 +19,9 @@ const validateEmailAndPassword = (req) => {
   }
 };
 
+const createHash = (string) =>
+  crypto.createHash("md5").update(string).digest("hex");
+
 const register = async (req, res) => {
   let { email, password } = req.body;
 
@@ -52,7 +55,7 @@ const register = async (req, res) => {
     name: user.name,
     email: user.email,
     verificationToken: user.verificationToken,
-    origin
+    origin,
   });
 
   res.status(StatusCodes.CREATED).json({
@@ -134,8 +137,6 @@ const forgotPassword = async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  console.log(user);
-
   if (user) {
     const passwordToken = crypto.randomBytes(70).toString("hex");
 
@@ -151,16 +152,16 @@ const forgotPassword = async (req, res) => {
       origin = "http://app.com";
     }
 
-    console.log(origin)
+    console.log(origin);
 
-   await sendResetPasswordEmail({
+    await sendResetPasswordEmail({
       name: user?.lastname,
       email: user.email,
       token: passwordToken,
-      origin
+      origin,
     });
 
-    user.passwordToken = passwordToken;
+    user.passwordToken = createHash(passwordToken);
     user.passwordTokenExpirationDate = passwordTokenExpirationDate;
     await user.save();
   }
@@ -172,32 +173,34 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  const {token, email, password} = req.body
-  if(!token || !email || !password) {
-    throw new   BadRequestError('All fields required')
+  const { token, email, password } = req.body;
+  if (!token || !email || !password) {
+    throw new BadRequestError("All fields required");
   }
 
-  const user = await User.findOne({email})
+  const user = await User.findOne({ email });
 
-  console.log(user)
+  console.log(user);
 
-  if(user){
-    const currentUser = new Date()
+  if (user) {
+    const currentUser = new Date();
 
-    console.log(currentUser, user.passwordTokenExpirationDate)
-
-    if(user.passwordToken === token && user.passwordTokenExpirationDate > currentUser){
-      user.password = password
-      user.passwordToken = null
-      user.passwordTokenExpirationDate = null
-      await user.save()
+    if (
+      user.passwordToken === createHash(token) &&
+      user.passwordTokenExpirationDate > currentUser
+    ) {
+      user.password = password;
+      user.passwordToken = null;
+      user.passwordTokenExpirationDate = null;
+      await user.save();
       res.status(StatusCodes.OK).json({
         status: true,
-        message: "password reset"
+        message: "password reset",
       });
+    } else {
+     throw new BadRequestError('Something goes wrong, try again')
     }
   }
-
 };
 
 module.exports = {

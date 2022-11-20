@@ -50,6 +50,7 @@ if (process.env.NODE_ENV === "development") {
 // App Routes
 app.use("/api/v1/auth", require("./routes/auth/auth.routes"));
 app.use("/api/v1/users", require("./routes/user/user.routes"));
+app.use("/api/v1/tasks", require("./routes/task/task.routes"));
 
 // APP ErrorHandler
 const notFoundMiddleware = require("./middlewares/not-found")

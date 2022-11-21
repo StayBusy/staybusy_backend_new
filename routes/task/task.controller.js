@@ -15,17 +15,33 @@ const getTasks = async (req, res) => {
     throw new BadRequestError("Verify your account");
   }
 
-  // tags = ["Skinte", "Eimbee"]; // i will delete later. just for testing
-
   const searchObj = {
     tag: { $in: tags },
     userDecline: { $nin: [_id] }, // The currentUser cannot get task if the user has declined the task before
     taken: false,
     completed: false,
+    ...req.query
   };
 
-  let tasks = await Task.find(searchObj);
+  const excludeFields = ["sort", "page", "limit", "fields"];
+  excludeFields.forEach((field) => delete searchObj[field]);
 
+  let queryStr = JSON.stringify(searchObj);
+  queryStr = queryStr.replace(
+    /\b(gte|gt|lte|lt|eq)\b/g,
+    (match) => `$${match}`
+  );
+  // console.log(JSON.parse(queryStr))
+
+  let query = Task.find(JSON.parse(queryStr));
+
+  // sorting the task
+  if(req.query){
+    // console.log(query.sort(req.query.sort))
+    query = query.sort(req.query.sort)
+  }
+
+  const tasks = await query;
   res
     .status(StatusCodes.OK)
     .json({ status: true, message: "Tasks", result: tasks.length, tasks });
@@ -105,28 +121,25 @@ const taskComplete = async (req, res) => {
   }
 
   // Checking if the task has been completed before
-  if(task.completed) {
-    throw new BadRequestError('The task has completed before now')
+  if (task.completed) {
+    throw new BadRequestError("The task has completed before now");
   }
 
-  if(task.taken && task.takenBy.toString() === user._id.toString()) {
-    task.completed = true
-    task.completedBy = user._id
-    await task.save()
+  if (task.taken && task.takenBy.toString() === user._id.toString()) {
+    task.completed = true;
+    task.completedBy = user._id;
+    await task.save();
     res.status(StatusCodes.OK).json({
       status: true,
       message: `Task completed`,
     });
   } else {
-   throw new BadRequestError("Task not taken by you")
+    throw new BadRequestError("Task not taken by you");
   }
 
-
   // const wallet =await Wallet.findOne({userId: user._id})
-  // wallet.balance = +wallet.balance + +task.price 
+  // wallet.balance = +wallet.balance + +task.price
   // await wallet.save()
-
 };
 
 module.exports = { getTasks, declineTask, acceptTask, taskComplete };
-

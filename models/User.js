@@ -43,6 +43,7 @@ const UserSchema = new Schema({
   period_available: String,
   tags: { type: Array, default: [] },
   completed: { type: Boolean, default: false },
+  taskTaken: [ { type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
   image:  String ,
   passwordToken: { type: String },
   passwordTokenExpirationDate: { type: Date },

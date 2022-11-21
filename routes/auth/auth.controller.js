@@ -7,6 +7,7 @@ const { createJWT } = require("../../utils/jwt");
 const User = require("../../models/User");
 const sendVerificationEmail = require("../../utils/sendVerficationEmail");
 const sendResetPasswordEmail = require("../../utils/sendResetPasswordEmail");
+const Wallet = require("../../models/Wallet");
 
 const validateEmailAndPassword = (req) => {
   const { errors } = validationResult(req);
@@ -80,6 +81,8 @@ const verifyUser = async (req, res) => {
   user.verified = new Date();
   user.verificationToken = null;
   await user.save();
+  await Wallet.create({ userId: user._id, balance: 0 });
+
 
   res.status(StatusCodes.OK).json({ status: true, message: "Email verified" });
 };

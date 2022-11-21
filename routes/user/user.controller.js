@@ -9,20 +9,25 @@ const path = require("path");
 
 const completeProfile = async (req, res) => {
   const { _id } = req.user;
+  const tags = req.body.tags.split(",")
+
+  if(tags.length > 4) {
+    throw new BadRequestError("You can only choose 4 categories");
+  }
 
   if (req.files === null) {
     throw new BadRequestError("Please upload your image");
   }
 
   const userImage = req.files.image;
-  if(!userImage.mimetype.includes('image')) {
+  if (!userImage.mimetype.includes("image")) {
     throw new BadRequestError("Please upload a valid image");
   }
 
   // max upload is 2 megabytes
-  const maxSize = 2000000
+  const maxSize = 2000000;
 
-  if(userImage.size > maxSize) {
+  if (userImage.size > maxSize) {
     throw new BadRequestError("Exceeded allowed image max size");
   }
 
@@ -30,7 +35,6 @@ const completeProfile = async (req, res) => {
     __dirname,
     "../../uploads/" + `${userImage.name}`
   );
-
 
   const userVerified = await User.findById(_id);
 
@@ -47,6 +51,8 @@ const completeProfile = async (req, res) => {
 
   req.body.completed = true;
   req.body.image = `/uploads/${userImage.name}`;
+  req.body.tags = tags;
+
 
   const user = await User.findByIdAndUpdate(userVerified._id, req.body, {
     new: true,

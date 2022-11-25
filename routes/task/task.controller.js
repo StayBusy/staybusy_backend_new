@@ -36,7 +36,7 @@ const getTasks = async (req, res) => {
   let query = Task.find(JSON.parse(queryStr));
 
   // sorting the task
-  if(req.query){
+  if(req.query.sort){
     // console.log(query.sort(req.query.sort))
     query = query.sort(req.query.sort)
   }

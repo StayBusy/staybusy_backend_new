@@ -3,6 +3,7 @@ const User = require('../models/User');
 const { isTokenValid } = require('../utils/jwt');
 
 const authenticationMiddleware = async (req, res, next) => {
+  console.log(req.headers)
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

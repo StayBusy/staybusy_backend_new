@@ -33,6 +33,7 @@ const register = async (req, res) => {
   validateEmailAndPassword(req);
 
   const userExists = await User.findOne({ email });
+  console.log(userExists);
   if (userExists !== null) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       status: false,
@@ -83,7 +84,6 @@ const verifyUser = async (req, res) => {
   await user.save();
   await Wallet.create({ userId: user._id, balance: 0 });
 
-
   res.status(StatusCodes.OK).json({ status: true, message: "Email verified" });
 };
 
@@ -120,9 +120,21 @@ const login = async (req, res) => {
     id: user._id,
   });
 
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 100
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+  }
+
   user = user.toObject();
   delete user.password;
 
+  // res.cookie("token", token, cookieOptions);
   res.status(StatusCodes.OK).json({
     status: true,
     message: "login successful",
@@ -201,7 +213,7 @@ const resetPassword = async (req, res) => {
         message: "password reset",
       });
     } else {
-     throw new BadRequestError('Something goes wrong, try again')
+      throw new BadRequestError("Something goes wrong, try again");
     }
   }
 };

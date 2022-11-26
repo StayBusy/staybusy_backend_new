@@ -61,6 +61,9 @@ const declineTask = async (req, res) => {
     { new: true }
   );
 
+  await User.findByIdAndUpdate(_id, { $addToSet: { declinedTasks: taskId } });
+
+
   if (updatedTask === null) {
     throw new NotFoundError("Task not found");
   }
@@ -129,6 +132,7 @@ const taskComplete = async (req, res) => {
     task.completed = true;
     task.completedBy = user._id;
     await task.save();
+    await User.findByIdAndUpdate(_id, { $addToSet: { completedTasks: taskId } });
     res.status(StatusCodes.OK).json({
       status: true,
       message: `Task completed`,

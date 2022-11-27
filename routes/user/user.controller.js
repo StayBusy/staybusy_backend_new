@@ -1,4 +1,5 @@
 const User = require("../../models/User");
+const { v4: uuidv4 } = require('uuid');
 const {
   BadRequestError,
   UnauthenticatedError,
@@ -31,9 +32,12 @@ const completeProfile = async (req, res) => {
     throw new BadRequestError("Exceeded allowed image max size");
   }
 
+
+  let imageId = `${uuidv4()}-${req.body.firstname}`
+
   const imagePath = path.join(
     __dirname,
-    "../../uploads/" + `${userImage.name}`
+    "../../uploads/" +  `${imageId}-${userImage.name}`
   );
 
   const userVerified = await User.findById(_id);
@@ -50,7 +54,7 @@ const completeProfile = async (req, res) => {
   await userImage.mv(imagePath);
 
   req.body.completed = true;
-  req.body.image = `/uploads/${userImage.name}`;
+  req.body.image = `uploads/${imageId}-${userImage.name}`;
   req.body.tags = tags;
 
 

@@ -44,6 +44,8 @@ const UserSchema = new Schema({
   tags: { type: Array, default: [] },
   completed: { type: Boolean, default: false },
   taskTaken: [ { type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+  completedTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+  declinedTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
   image:  String ,
   passwordToken: { type: String },
   passwordTokenExpirationDate: { type: Date },

@@ -37,7 +37,7 @@ const register = async (req, res) => {
   if (userExists !== null) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       status: false,
-      message: "Email is in use",
+      message: "Email address is already exist",
     });
   }
 
@@ -70,6 +70,8 @@ const verifyUser = async (req, res) => {
   const { verificationToken, email } = req.body;
 
   const user = await User.findOne({ email }).select("+verificationToken");
+
+  console.log(74,user)
   if (user === null) {
     throw new UnauthenticatedError("User not found");
   }

@@ -8,20 +8,25 @@ const {
 } = require("../../errors");
 const { StatusCodes } = require("http-status-codes");
 
-const getTasks = async (req, res) => {
+const getTaskOld = async (req, res) => {
   let { _id, isVerified, tags } = req.user;
 
   if (isVerified === false) {
     throw new BadRequestError("Verify your account");
   }
 
-  const searchObj = {
-    tag: { $in: tags },
+  let searchObj = {
+    // tag: { $in: tags },
     userDecline: { $nin: [_id] }, // The currentUser cannot get task if the user has declined the task before
     taken: false,
     completed: false,
-    ...req.query
+    ...req.query,
   };
+
+  if (req.query.title) {
+    const queryRegx = new RegExp(req.query.title, "i");
+    searchObj.title = queryRegx;
+  }
 
   const excludeFields = ["sort", "page", "limit", "fields"];
   excludeFields.forEach((field) => delete searchObj[field]);
@@ -31,14 +36,62 @@ const getTasks = async (req, res) => {
     /\b(gte|gt|lte|lt|eq)\b/g,
     (match) => `$${match}`
   );
-  // console.log(JSON.parse(queryStr))
+  console.log(JSON.parse(queryStr));
 
   let query = Task.find(JSON.parse(queryStr));
 
   // sorting the task
-  if(req.query.sort){
+  if (req.query.sort) {
     // console.log(query.sort(req.query.sort))
-    query = query.sort(req.query.sort)
+    query = query.sort(req.query.sort);
+  }
+
+  const tasks = await query;
+  res
+    .status(StatusCodes.OK)
+    .json({ status: true, message: "Tasks", result: tasks.length, tasks });
+};
+
+const getTasks = async (req, res) => {
+  let { _id, isVerified, tags } = req.user;
+  let { title, location, price, sort } = req.query;
+
+  if (isVerified === false) {
+    throw new BadRequestError("Verify your account");
+  }
+
+  const queryObject = {};
+
+  if (title) {
+    queryObject.title = { $regex: title, $options: "i" };
+  }
+
+  if (price) {
+    console.log(price);
+    queryObject.price = { $eq: +price };
+  }
+  console.log("outside", price);
+
+  if (location) {
+    console.log(location);
+    queryObject.location = location;
+  }
+
+  queryObject.tag = { $in: tags };
+  queryObject.taken = false;
+  queryObject.completed = false;
+  queryObject.userDecline = { $nin: [_id] };
+
+  console.log(queryObject)
+
+  let query = Task.find(queryObject);
+
+  if (sort) {
+    let sortingIn = sort === "Newest" ? "createdAt" : "-createdAt";
+    console.log(sortingIn);
+    query = query.sort(sortingIn);
+  } else {
+    query = query.sort("createdAt");
   }
 
   const tasks = await query;
@@ -63,7 +116,6 @@ const declineTask = async (req, res) => {
 
   await User.findByIdAndUpdate(_id, { $addToSet: { declinedTasks: taskId } });
 
-
   if (updatedTask === null) {
     throw new NotFoundError("Task not found");
   }
@@ -76,6 +128,7 @@ const declineTask = async (req, res) => {
 };
 
 const acceptTask = async (req, res) => {
+  console.log("accept");
   const { _id, taskTaken } = req.user;
   const { taskId } = req.params;
 
@@ -132,7 +185,9 @@ const taskComplete = async (req, res) => {
     task.completed = true;
     task.completedBy = user._id;
     await task.save();
-    await User.findByIdAndUpdate(_id, { $addToSet: { completedTasks: taskId } });
+    await User.findByIdAndUpdate(_id, {
+      $addToSet: { completedTasks: taskId },
+    });
     res.status(StatusCodes.OK).json({
       status: true,
       message: `Task completed`,

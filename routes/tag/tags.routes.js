@@ -6,7 +6,6 @@ const Tag = require("../../models/Tags");
 const tagRouter = express.Router();
 
 async function getTags(req, res) {
-    console.log("tags")
   const tags = await Tag.find({});
 
   res.status(StatusCodes.OK).json({

@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const Task = require("../../models/Task");
 const Wallet = require("../../models/Wallet");
+const moment = require('moment');
 const {
   BadRequestError,
   UnauthenticatedError,
@@ -54,7 +55,7 @@ const getTaskOld = async (req, res) => {
 
 const getTasks = async (req, res) => {
   let { _id, isVerified, tags } = req.user;
-  let { title, location, price, sort } = req.query;
+  let { title, location, price, sort, priceFilter, tagFilter,date } = req.query;
 
   if (isVerified === false) {
     throw new BadRequestError("Verify your account");
@@ -62,27 +63,48 @@ const getTasks = async (req, res) => {
 
   const queryObject = {};
 
-  if (title) {
-    queryObject.title = { $regex: title, $options: "i" };
-  }
+  if (title) queryObject.title = { $regex: title, $options: "i" };
+  if (price) queryObject.price = { $eq: +price };
+  if (location) queryObject.location = location;
 
-  if (price) {
-    console.log(price);
-    queryObject.price = { $eq: +price };
-  }
-  console.log("outside", price);
+  console.log(date?.start)
+  // { start: '2022-11-03', end: '2022-11-02' }
+  //  const options = {}; 
+if(date?.start){
+        if(!queryObject["createdBy"]) queryObject["createdAt"] = {};
+    var dateFrom = moment(new Date(date.start)).toDate();
+        queryObject["createdAt"]['$gte'] = dateFrom;
+}
 
-  if (location) {
-    console.log(location);
-    queryObject.location = location;
+if(date?.end){
+    if(!queryObject["createdAt"]) queryObject["createdAt"] = {};
+    var dateTo = moment(new Date(date.end)).toDate();
+        queryObject["createdAt"]['$lte'] = dateTo;
+}
+
+console.log(queryObject)
+
+  if (priceFilter) {
+    let queryStr = JSON.stringify(priceFilter);
+    queryStr = queryStr.replace(
+      /\b(gte|gt|lte|lt|eq)\b/g,
+      (match) => `$${match}`
+    );
+    const prices = JSON.parse(queryStr);
+    queryObject.price = prices;
+    // queryObject.price = { $gte: 20, $lte:2000 };
   }
 
   queryObject.tag = { $in: tags };
+
+  if (tagFilter) {
+    const tagToGet = tagFilter.split(",").filter(Boolean);
+    queryObject.tag = { $in: tagToGet };
+  }
+
   queryObject.taken = false;
   queryObject.completed = false;
   queryObject.userDecline = { $nin: [_id] };
-
-  console.log(queryObject)
 
   let query = Task.find(queryObject);
 

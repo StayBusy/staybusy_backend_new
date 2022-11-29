@@ -5,6 +5,8 @@ const { isTokenValid } = require('../utils/jwt');
 const authenticationMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
+  console.log(req.headers.authorization)
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new UnauthenticatedError('No token provide');
   }

@@ -5,7 +5,7 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const morgan = require("morgan");
-const fileUpload = require('express-fileupload')
+const fileUpload = require("express-fileupload");
 
 // importing session and flash and cookieParse and morgan
 // const session = require("express-session");
@@ -19,7 +19,7 @@ const app = express();
 //cors
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload())
+app.use(fileUpload());
 
 // view engine setup
 // app.set("views", path.join(__dirname, "views"));
@@ -51,11 +51,11 @@ if (process.env.NODE_ENV === "development") {
 app.use("/api/v1/auth", require("./routes/auth/auth.routes"));
 app.use("/api/v1/users", require("./routes/user/user.routes"));
 app.use("/api/v1/tasks", require("./routes/task/task.routes"));
-app.use("/api/v1/tags", require("./routes/Tags/tags.route"));
+app.use("/api/v1/tags", require("./routes/tag/tags.routes"));
 
 // APP ErrorHandler
-const notFoundMiddleware = require("./middlewares/not-found")
-const errorHandlerMiddleware = require('./middlewares/error-handler')
+const notFoundMiddleware = require("./middlewares/not-found");
+const errorHandlerMiddleware = require("./middlewares/error-handler");
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 

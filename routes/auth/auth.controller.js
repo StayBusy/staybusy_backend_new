@@ -33,7 +33,6 @@ const register = async (req, res) => {
   validateEmailAndPassword(req);
 
   const userExists = await User.findOne({ email });
-  console.log(userExists);
   if (userExists !== null) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       status: false,
@@ -71,7 +70,6 @@ const verifyUser = async (req, res) => {
 
   const user = await User.findOne({ email }).select("+verificationToken");
 
-  console.log(74,user)
   if (user === null) {
     throw new UnauthenticatedError("User not found");
   }
@@ -169,8 +167,6 @@ const forgotPassword = async (req, res) => {
       origin = "http://app.com";
     }
 
-    console.log(origin);
-
     await sendResetPasswordEmail({
       name: user?.lastname,
       email: user.email,
@@ -196,8 +192,6 @@ const resetPassword = async (req, res) => {
   }
 
   const user = await User.findOne({ email });
-
-  console.log(user);
 
   if (user) {
     const currentUser = new Date();

@@ -37,13 +37,11 @@ const getTaskOld = async (req, res) => {
     /\b(gte|gt|lte|lt|eq)\b/g,
     (match) => `$${match}`
   );
-  console.log(JSON.parse(queryStr));
 
   let query = Task.find(JSON.parse(queryStr));
 
   // sorting the task
   if (req.query.sort) {
-    // console.log(query.sort(req.query.sort))
     query = query.sort(req.query.sort);
   }
 
@@ -67,9 +65,7 @@ const getTasks = async (req, res) => {
   if (price) queryObject.price = { $eq: +price };
   if (location) queryObject.location = location;
 
-  console.log(date?.start)
   // { start: '2022-11-03', end: '2022-11-02' }
-  //  const options = {}; 
 if(date?.start){
         if(!queryObject["createdBy"]) queryObject["createdAt"] = {};
     var dateFrom = moment(new Date(date.start)).toDate();
@@ -82,7 +78,7 @@ if(date?.end){
         queryObject["createdAt"]['$lte'] = dateTo;
 }
 
-console.log(queryObject)
+// console.log(queryObject)
 
   if (priceFilter) {
     let queryStr = JSON.stringify(priceFilter);
@@ -110,7 +106,6 @@ console.log(queryObject)
 
   if (sort) {
     let sortingIn = sort === "Newest" ? "createdAt" : "-createdAt";
-    console.log(sortingIn);
     query = query.sort(sortingIn);
   } else {
     query = query.sort("createdAt");
@@ -150,7 +145,6 @@ const declineTask = async (req, res) => {
 };
 
 const acceptTask = async (req, res) => {
-  console.log("accept");
   const { _id, taskTaken } = req.user;
   const { taskId } = req.params;
 

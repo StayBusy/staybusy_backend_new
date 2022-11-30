@@ -33,7 +33,6 @@ const register = async (req, res) => {
   validateEmailAndPassword(req);
 
   const userExists = await User.findOne({ email });
-  console.log(userExists);
   if (userExists !== null) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       status: false,
@@ -71,7 +70,6 @@ const verifyUser = async (req, res) => {
 
   const user = await User.findOne({ email }).select("+verificationToken");
 
-  console.log(74,user)
   if (user === null) {
     throw new UnauthenticatedError("User not found");
   }
@@ -169,8 +167,6 @@ const forgotPassword = async (req, res) => {
       origin = "http://app.com";
     }
 
-    console.log(origin);
-
     await sendResetPasswordEmail({
       name: user?.lastname,
       email: user.email,
@@ -197,8 +193,6 @@ const resetPassword = async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  console.log(user);
-
   if (user) {
     const currentUser = new Date();
 
@@ -220,10 +214,61 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  let { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    throw new BadRequestError("All fields required");
+  }
+  let user = await User.findOne({ _id: req.user._id }).select("+password");
+
+  if (!user) {
+    return res.status(StatusCodes.NON_AUTHORITATIVE_INFORMATION).json({
+      status: false,
+      message: "invalid credentials",
+    });
+  }
+
+  const isPasswordCorrect = await user.comparePassword(oldPassword);
+  if (!isPasswordCorrect) {
+    return res.status(StatusCodes.NON_AUTHORITATIVE_INFORMATION).json({
+      status: false,
+      message: "Current Password you enter is incorrect",
+    });
+  }
+
+  user.password = newPassword;
+  const updatedUser = await user.save();
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 100
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+  }
+
+  user = user.toObject();
+  delete user.password;
+
+  const token = createJWT({
+    email: user.email,
+    id: user._id,
+  });
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "password updated",
+    user,
+    token,
+  });
+};
+
 module.exports = {
   register,
   login,
   verifyUser,
   forgotPassword,
   resetPassword,
+  changePassword,
 };

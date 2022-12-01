@@ -2,7 +2,7 @@ const express = require("express");
 const { body } = require("express-validator");
 const authenticateUser = require("../../middlewares/authentication");
 
-const { completeProfile,getMe, updateProfileBasic, updateTags } = require("./user.controller");
+const { completeProfile,getMe, updateProfileBasic, updateTags, updateProfileImage } = require("./user.controller");
 
 const userRouter = express.Router();
 
@@ -15,5 +15,6 @@ userRouter.patch("/complete-profile", authenticateUser, completeProfile);
 userRouter.get("/me", authenticateUser, getMe);
 userRouter.patch("/basic", authenticateUser, updateProfileBasic);
 userRouter.patch("/update-tag", authenticateUser, updateTags);
+userRouter.patch("/change-profile-image", authenticateUser, updateProfileImage);
 
 module.exports = userRouter;

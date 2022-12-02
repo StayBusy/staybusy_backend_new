@@ -201,8 +201,9 @@ const taskComplete = async (req, res) => {
     task.completed = true;
     task.completedBy = user._id;
     await task.save();
-    await User.findByIdAndUpdate(_id, {
+    await User.findByIdAndUpdate(user._id, {
       $addToSet: { completedTasks: taskId },
+      $pull: { taskTaken: taskId },
     });
     res.status(StatusCodes.OK).json({
       status: true,

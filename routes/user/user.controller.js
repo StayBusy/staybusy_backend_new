@@ -7,7 +7,7 @@ const {
 } = require("../../errors");
 const { StatusCodes } = require("http-status-codes");
 const path = require("path");
-const { findOne, findOneAndUpdate } = require("../../models/User");
+const Wallet = require("../../models/Wallet");
 
 const completeProfile = async (req, res) => {
   const { _id } = req.user;
@@ -69,11 +69,25 @@ const completeProfile = async (req, res) => {
   });
 };
 
-const getMe = (req, res) => {
+const getMe = async (req, res) => {
+  const { _id } = req.user;
+
+  const wallet = await Wallet.findOne({userId: _id})
+  
+  let user = await User.findOne({ _id })
+    .populate("taskTaken")
+    .populate("completedTasks");
+  if (user === null) {
+    throw new UnauthenticatedError("User not found");
+  }
+
+  user = user.toObject()
+  user.wallet = wallet.balance
+
   res.status(StatusCodes.OK).json({
     status: true,
     message: "User data",
-    user: req.user,
+    user,
   });
 };
 
@@ -106,7 +120,9 @@ const updateProfileBasic = async (req, res) => {
     runValidators: true,
   });
 
-  console.log(user);
+  if (user === null) {
+    throw new UnauthenticatedError("User not found");
+  }
 
   res.status(StatusCodes.OK).json({
     status: true,

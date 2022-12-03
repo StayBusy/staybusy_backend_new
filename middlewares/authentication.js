@@ -15,13 +15,13 @@ const authenticationMiddleware = async (req, res, next) => {
   try {
     const decoded = await isTokenValid(token);
     const { email, id } = decoded;
-    console.log(id);
-    const currentUser = await User.findOne({ _id: id }).populate("taskTaken").populate("completedTasks");
+    // const currentUser = await User.findOne({ _id: id }).populate("taskTaken").populate("completedTasks");
 
-    if (!currentUser) {
-      throw new UnauthenticatedError("The user doesn't exists");
-    }
-    req.user = currentUser;
+    // if (!currentUser) {
+    //   throw new UnauthenticatedError("The user doesn't exists");
+    // }
+    req.user = {email, _id:id};
+    // req.user = currentUser;
     next();
   } catch (error) {
     // console.log(29, error.message);

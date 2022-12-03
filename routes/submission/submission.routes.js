@@ -103,6 +103,8 @@ const saveSubmission = async (req, res) => {
     throw new BadRequestError("Task not taken by you");
   }
 
+  console.log("nothing")
+
   // const wallet =await Wallet.findOne({userId: user._id})
   // wallet.balance = +wallet.balance + +task.price
   // await wallet.save()

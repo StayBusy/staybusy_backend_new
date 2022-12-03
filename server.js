@@ -52,6 +52,7 @@ app.use("/api/v1/auth", require("./routes/auth/auth.routes"));
 app.use("/api/v1/users", require("./routes/user/user.routes"));
 app.use("/api/v1/tasks", require("./routes/task/task.routes"));
 app.use("/api/v1/tags", require("./routes/tag/tags.routes"));
+app.use("/api/v1/submissions", require("./routes/submission/submission.routes"));
 
 // APP ErrorHandler
 const notFoundMiddleware = require("./middlewares/not-found");

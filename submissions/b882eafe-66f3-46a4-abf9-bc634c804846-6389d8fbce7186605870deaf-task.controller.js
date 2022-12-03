@@ -59,14 +59,11 @@ const getTaskOld = async (req, res) => {
 const getTasks = async (req, res) => {
   // let { _id, isVerified, tags } = req.user;
   let { _id } = req.user;
-  // const { isVerified, tags } = await User.findOne({ _id });
-  const user = await User.findOne({ _id });
-  if(user === null) throw new UnauthenticatedError("User not found with the given id")
-
+  const { isVerified, tags } = await User.findOne({ _id });
   let { title, location, price, sort, priceFilter, tagFilter, date } =
     req.query;
 
-  if (user.isVerified === false) {
+  if (isVerified === false) {
     throw new BadRequestError("Verify your account");
   }
 
@@ -102,7 +99,7 @@ const getTasks = async (req, res) => {
     // queryObject.price = { $gte: 20, $lte:2000 };
   }
 
-  queryObject.tag = { $in: user.tags };
+  queryObject.tag = { $in: tags };
 
   if (tagFilter) {
     const tagToGet = tagFilter.split(",").filter(Boolean);
@@ -253,9 +250,9 @@ const taskComplete = async (req, res) => {
   const task = await Task.findById(taskId);
 
   // Checking if the task has been completed before
-  if (task.completed) {
-    throw new BadRequestError("The task has completed before now");
-  }
+  // if (task.completed) {
+  //   throw new BadRequestError("The task has completed before now");
+  // }
   let filesArr = [];
   if (req.files !== null) {
     if (Array.isArray(files)) {
@@ -271,7 +268,7 @@ const taskComplete = async (req, res) => {
     throw new NotFoundError("Task not found");
   }
 
-  await Submission.create({
+  const submittedTask = await Submission.create({
     urls,
     files: filesArr,
     submittedBy: _id,

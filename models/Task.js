@@ -18,10 +18,12 @@ const TaskSchema = new Schema(
     },
     location: {type: String},
     completed: { type: Boolean, default: false },
+    pending: { type: Boolean, default: false },
     completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     taken: { type: Boolean, default: false },
     takenBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     userDecline: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    
   },
   { toJSON: { getters: true }, timestamps: true }
 );

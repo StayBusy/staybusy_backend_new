@@ -7,7 +7,7 @@ const {
 } = require("../../errors");
 const { StatusCodes } = require("http-status-codes");
 const path = require("path");
-const { findOne, findOneAndUpdate } = require("../../models/User");
+const Wallet = require("../../models/Wallet");
 
 const completeProfile = async (req, res) => {
   const { _id } = req.user;
@@ -69,11 +69,25 @@ const completeProfile = async (req, res) => {
   });
 };
 
-const getMe = (req, res) => {
+const getMe = async (req, res) => {
+  const { _id } = req.user;
+
+  const wallet = await Wallet.findOne({userId: _id})
+  
+  let user = await User.findOne({ _id })
+    .populate("taskTaken")
+    .populate("completedTasks");
+  if (user === null) {
+    throw new UnauthenticatedError("User not found");
+  }
+
+  user = user.toObject()
+  user.wallet = wallet.balance
+
   res.status(StatusCodes.OK).json({
     status: true,
     message: "User data",
-    user: req.user,
+    user,
   });
 };
 
@@ -106,7 +120,9 @@ const updateProfileBasic = async (req, res) => {
     runValidators: true,
   });
 
-  console.log(user);
+  if (user === null) {
+    throw new UnauthenticatedError("User not found");
+  }
 
   res.status(StatusCodes.OK).json({
     status: true,
@@ -118,7 +134,6 @@ const updateProfileBasic = async (req, res) => {
 const updateTags = async (req, res) => {
   let { tags } = req.body;
   tags = tags.split(",");
-  console.log(121,tags)
   const user = await User.findByIdAndUpdate(
     req.user._id,
     { tags },
@@ -135,4 +150,52 @@ const updateTags = async (req, res) => {
   });
 };
 
-module.exports = { completeProfile, getMe, updateProfileBasic, updateTags };
+const updateProfileImage = async (req, res) => {
+  const { _id } = req.user;
+
+  if (req.files === null) {
+    throw new BadRequestError("Please upload image");
+  }
+
+  const userImage = req.files.image;
+  if (!userImage.mimetype.includes("image")) {
+    throw new BadRequestError("Please upload a valid image");
+  }
+
+  // max upload is 2 megabytes
+  const maxSize = 2000000;
+
+  if (userImage.size > maxSize) {
+    throw new BadRequestError("Exceeded allowed image max size");
+  }
+
+  let imageId = `${uuidv4()}-${req.body.firstname}`;
+
+  const imagePath = path.join(
+    __dirname,
+    "../../uploads/" + `${imageId}-${userImage.name}`
+  );
+
+  await userImage.mv(imagePath);
+
+  req.body.image = `uploads/${imageId}-${userImage.name}`;
+
+  const user = await User.findByIdAndUpdate(_id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "uploaded",
+    user,
+  });
+};
+
+module.exports = {
+  completeProfile,
+  getMe,
+  updateProfileBasic,
+  updateTags,
+  updateProfileImage,
+};

@@ -17,7 +17,7 @@ async function getSubmission(req, res) {
   const submissions = await Submission.find({ submittedBy: _id }).populate(
     "taskId"
   );
-  console.log(submissions);
+
   res.status(StatusCodes.OK).json({
     status: true,
     message: "success",
@@ -75,15 +75,12 @@ const saveSubmission = async (req, res) => {
     }
   }
 
-  if (task === null) {
-    throw new NotFoundError("Task not found");
-  }
-
   await Submission.create({
     urls,
     files: filesArr,
     submittedBy: _id,
     taskId,
+    price: task.price
   });
 
   if (task.taken && task.takenBy.toString() === _id.toString()) {

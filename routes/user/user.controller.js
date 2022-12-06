@@ -8,6 +8,8 @@ const {
 const { StatusCodes } = require("http-status-codes");
 const path = require("path");
 const Wallet = require("../../models/Wallet");
+const Submission = require("../../models/Submission");
+const { default: mongoose } = require("mongoose");
 
 const completeProfile = async (req, res) => {
   const { _id } = req.user;
@@ -72,8 +74,22 @@ const completeProfile = async (req, res) => {
 const getMe = async (req, res) => {
   const { _id } = req.user;
 
-  const wallet = await Wallet.findOne({userId: _id})
-  
+  const wallet = await Wallet.findOne({ userId: _id });
+  // const submission = await Submission.find({
+  //   userId: _id,
+  //   status: "completed",
+  // });
+
+  const submission = await Submission.aggregate([
+    {
+      $match: {
+        status: "completed",
+        submittedBy: mongoose.Types.ObjectId(_id),
+      },
+    },
+    { $group: { _id: null, price: { $sum: "$price" } } },
+  ]);
+
   let user = await User.findOne({ _id })
     .populate("taskTaken")
     .populate("completedTasks");
@@ -81,8 +97,12 @@ const getMe = async (req, res) => {
     throw new UnauthenticatedError("User not found");
   }
 
-  user = user.toObject()
-  user.wallet = wallet.balance
+  wallet.balance = submission[0]?.price.toFixed(2);
+
+ const userWallet = await wallet.save();
+
+  user = user.toObject();
+  user.wallet = userWallet?.balance;
 
   res.status(StatusCodes.OK).json({
     status: true,
@@ -96,7 +116,7 @@ const updateProfileBasic = async (req, res) => {
   const userObj = {};
   if (email) {
     const isEmailExist = await User.findOne({ email });
-    console.log(isEmailExist);
+    
     if (email === req.user.email) {
       userObj.email = email;
     } else if (isEmailExist) {

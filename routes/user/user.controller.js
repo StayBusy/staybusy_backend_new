@@ -97,9 +97,14 @@ const getMe = async (req, res) => {
     throw new UnauthenticatedError("User not found");
   }
 
-  wallet.balance = submission[0]?.price.toFixed(2);
+  let userWallet
 
- const userWallet = await wallet.save();
+  if(wallet !== null) {
+
+    wallet.balance = submission[0]?.price.toFixed(2);
+   userWallet = await wallet.save();
+  }
+
 
   user = user.toObject();
   user.wallet = userWallet?.balance;
@@ -116,7 +121,7 @@ const updateProfileBasic = async (req, res) => {
   const userObj = {};
   if (email) {
     const isEmailExist = await User.findOne({ email });
-    
+
     if (email === req.user.email) {
       userObj.email = email;
     } else if (isEmailExist) {
@@ -212,10 +217,47 @@ const updateProfileImage = async (req, res) => {
   });
 };
 
+const addAccount = async (req, res) => {
+  const { country, bankName, bankAccountNumber, bankAccountName, sortCode } =
+    req.body;
+  if (
+    !country ||
+    !bankName ||
+    !bankAccountName ||
+    !bankAccountNumber ||
+    !sortCode
+  ) {
+    throw new BadRequestError("All fields required");
+  }
+
+  const user = await User.findById(req.user._id).select(
+    "country accountDetail"
+  );
+  // const isAccountExists = user.accountDetail.find(
+  //   (acc) => acc.bankAccountNumber === bankAccountNumber
+  // );
+  // if (isAccountExists) {
+  //   throw new BadRequestError("Account number exists");
+  // }
+  user.accountDetail = [
+    // ...user.accountDetail,
+    { country, bankName, bankAccountNumber, bankAccountName, sortCode },
+  ];
+
+  const updatedUser = await user.save();
+
+  res.status(StatusCodes.CREATED).json({
+    status: true,
+    message: "Account detail added",
+    accountDetail: updatedUser,
+  });
+};
+
 module.exports = {
   completeProfile,
   getMe,
   updateProfileBasic,
   updateTags,
   updateProfileImage,
+  addAccount,
 };

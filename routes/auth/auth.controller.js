@@ -49,7 +49,7 @@ const register = async (req, res) => {
   if (process.env.NODE_ENV === "development") {
     origin = "http://localhost:3000";
   } else {
-    origin = "http://localhost:3000";
+    origin = process.env.ORIGIN;
   }
 
   await sendVerificationEmail({

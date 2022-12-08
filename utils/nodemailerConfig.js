@@ -1,8 +1,8 @@
 module.exports = {
-  host: "smtp.ethereal.email",
+  host: process.env.EMAIL_HOST,
   port: 587,
   auth: {
-    user: 'eleazar.gusikowski@ethereal.email',
-    pass: 'dE36vZFWRTeqJDUJyn'
-}
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
 };

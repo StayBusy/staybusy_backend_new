@@ -9,6 +9,10 @@ const SubmissionSchema = new Schema({
     ref: "User",
     required: [true, "UserId is required"],
   },
+  price: {
+    type: Number,
+    required: [true, "amount is required"],
+  },
   taskId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Task",

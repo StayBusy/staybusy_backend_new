@@ -8,6 +8,8 @@ const {
 const { StatusCodes } = require("http-status-codes");
 const path = require("path");
 const Wallet = require("../../models/Wallet");
+const Submission = require("../../models/Submission");
+const { default: mongoose } = require("mongoose");
 
 const completeProfile = async (req, res) => {
   const { _id } = req.user;
@@ -72,8 +74,22 @@ const completeProfile = async (req, res) => {
 const getMe = async (req, res) => {
   const { _id } = req.user;
 
-  const wallet = await Wallet.findOne({userId: _id})
-  
+  const wallet = await Wallet.findOne({ userId: _id });
+  // const submission = await Submission.find({
+  //   userId: _id,
+  //   status: "completed",
+  // });
+
+  const submission = await Submission.aggregate([
+    {
+      $match: {
+        status: "completed",
+        submittedBy: mongoose.Types.ObjectId(_id),
+      },
+    },
+    { $group: { _id: null, price: { $sum: "$price" } } },
+  ]);
+
   let user = await User.findOne({ _id })
     .populate("taskTaken")
     .populate("completedTasks");
@@ -81,8 +97,17 @@ const getMe = async (req, res) => {
     throw new UnauthenticatedError("User not found");
   }
 
-  user = user.toObject()
-  user.wallet = wallet.balance
+  let userWallet
+
+  if(wallet !== null) {
+
+    wallet.balance = submission[0]?.price.toFixed(2);
+   userWallet = await wallet.save();
+  }
+
+
+  user = user.toObject();
+  user.wallet = userWallet?.balance;
 
   res.status(StatusCodes.OK).json({
     status: true,
@@ -96,7 +121,7 @@ const updateProfileBasic = async (req, res) => {
   const userObj = {};
   if (email) {
     const isEmailExist = await User.findOne({ email });
-    console.log(isEmailExist);
+
     if (email === req.user.email) {
       userObj.email = email;
     } else if (isEmailExist) {
@@ -192,10 +217,47 @@ const updateProfileImage = async (req, res) => {
   });
 };
 
+const addAccount = async (req, res) => {
+  const { country, bankName, bankAccountNumber, bankAccountName, sortCode } =
+    req.body;
+  if (
+    !country ||
+    !bankName ||
+    !bankAccountName ||
+    !bankAccountNumber ||
+    !sortCode
+  ) {
+    throw new BadRequestError("All fields required");
+  }
+
+  const user = await User.findById(req.user._id).select(
+    "country accountDetail"
+  );
+  // const isAccountExists = user.accountDetail.find(
+  //   (acc) => acc.bankAccountNumber === bankAccountNumber
+  // );
+  // if (isAccountExists) {
+  //   throw new BadRequestError("Account number exists");
+  // }
+  user.accountDetail = [
+    // ...user.accountDetail,
+    { country, bankName, bankAccountNumber, bankAccountName, sortCode },
+  ];
+
+  const updatedUser = await user.save();
+
+  res.status(StatusCodes.CREATED).json({
+    status: true,
+    message: "Account detail added",
+    accountDetail: updatedUser,
+  });
+};
+
 module.exports = {
   completeProfile,
   getMe,
   updateProfileBasic,
   updateTags,
   updateProfileImage,
+  addAccount,
 };

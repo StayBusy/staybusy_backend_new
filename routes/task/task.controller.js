@@ -198,7 +198,6 @@ const acceptTask = async (req, res) => {
 const pendingTask = async (req, res) => {
   const { _id } = req.user;
   const { taskId } = req.params;
-  console.log(_id, taskId);
   const task = await Task.findById(taskId);
   if (task === null) {
     throw new NotFoundError("Task not found");
@@ -213,7 +212,7 @@ const pendingTask = async (req, res) => {
     task.pending = true;
     task.completed = false;
     let taskNew = await task.save();
-    console.log(taskNew);
+  
     await User.findByIdAndUpdate(_id, {
       $addToSet: { completedTasks: taskId },
       $pull: { taskTaken: taskId },

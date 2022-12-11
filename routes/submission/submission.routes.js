@@ -16,7 +16,9 @@ async function getSubmission(req, res) {
   const { _id } = req.user;
   const submissions = await Submission.find({ submittedBy: _id }).populate(
     "taskId"
-  );
+  ).select("taskId status createdAt");
+
+  console.log(submissions)
 
   res.status(StatusCodes.OK).json({
     status: true,
@@ -80,8 +82,14 @@ const saveSubmission = async (req, res) => {
     files: filesArr,
     submittedBy: _id,
     taskId,
-    price: task.price
+    price: task.price,
   });
+
+  // I will remove later
+  const wallet = await Wallet.findOne({ submittedBy: _id });
+  if (!wallet) {
+    await Wallet.create({ userId: _id, balance: 0 });
+  }
 
   if (task.taken && task.takenBy.toString() === _id.toString()) {
     task.pending = false;
@@ -100,7 +108,7 @@ const saveSubmission = async (req, res) => {
     throw new BadRequestError("Task not taken by you");
   }
 
-  console.log("nothing")
+  console.log("nothing");
 
   // const wallet =await Wallet.findOne({userId: user._id})
   // wallet.balance = +wallet.balance + +task.price

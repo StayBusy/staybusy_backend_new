@@ -63,6 +63,7 @@ const completeProfile = async (req, res) => {
     new: true,
     runValidators: true,
   });
+  await Wallet.create({ userId: user._id, balance: 0 });
 
   res.status(StatusCodes.OK).json({
     status: true,
@@ -118,11 +119,12 @@ const getMe = async (req, res) => {
 
 const updateProfileBasic = async (req, res) => {
   const { email, firstname, lastname, phone_number } = req.body;
+
   const userObj = {};
   if (email) {
     const isEmailExist = await User.findOne({ email });
 
-    if (email === req.user.email) {
+    if (email === isEmailExist.email) {
       userObj.email = email;
     } else if (isEmailExist) {
       throw new BadRequestError("Email is not avaliable");
@@ -253,6 +255,14 @@ const addAccount = async (req, res) => {
   });
 };
 
+const getSetting = async (req, res)=>{
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "setting"
+  })
+}
+
 module.exports = {
   completeProfile,
   getMe,
@@ -260,4 +270,5 @@ module.exports = {
   updateTags,
   updateProfileImage,
   addAccount,
+  getSetting
 };

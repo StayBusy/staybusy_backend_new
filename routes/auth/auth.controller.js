@@ -82,7 +82,7 @@ const verifyUser = async (req, res) => {
   user.verified = new Date();
   user.verificationToken = null;
   await user.save();
-  await Wallet.create({ userId: user._id, balance: 0 });
+  // await Wallet.create({ userId: user._id, balance: 0 });
 
   res.status(StatusCodes.OK).json({ status: true, message: "Email verified" });
 };

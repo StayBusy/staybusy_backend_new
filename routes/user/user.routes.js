@@ -9,6 +9,7 @@ const {
   updateTags,
   updateProfileImage,
   addAccount,
+  getSetting,
 } = require("./user.controller");
 
 const userRouter = express.Router();
@@ -20,6 +21,7 @@ const userRouter = express.Router();
 
 userRouter.patch("/complete-profile", authenticateUser, completeProfile);
 userRouter.get("/me", authenticateUser, getMe);
+userRouter.get("/setting", authenticateUser, getSetting);
 userRouter.patch("/basic", authenticateUser, updateProfileBasic);
 userRouter.patch("/add-account", authenticateUser, addAccount);
 userRouter.patch("/update-tag", authenticateUser, updateTags);

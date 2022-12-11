@@ -15,18 +15,18 @@ const authenticationMiddleware = async (req, res, next) => {
   try {
     const decoded = await isTokenValid(token);
     const { email, id } = decoded;
-    // const currentUser = await User.findOne({ _id: id }).populate("taskTaken").populate("completedTasks");
+    const currentUser = await User.findOne({ _id: id }).populate("taskTaken").populate("completedTasks");
 
-    // if (!currentUser) {
-    //   throw new UnauthenticatedError("The user doesn't exists");
-    // }
+    if (!currentUser) {
+      throw new UnauthenticatedError("The user doesn't exists");
+    }
     req.user = {email, _id:id};
     // req.user = currentUser;
     next();
   } catch (error) {
     // console.log(29, error.message);
     if (error.message === "jwt malformed") {
-      throw new UnauthenticatedError("Invalid login.try to login again");
+      throw new UnauthenticatedError("Invalid login. Try to login again");
     }
     throw new UnauthenticatedError(error.message);
   }

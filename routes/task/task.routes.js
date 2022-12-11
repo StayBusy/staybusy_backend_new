@@ -8,11 +8,13 @@ const {
   acceptTask,
   taskComplete,
   pendingTask,
+  getCurrentUserTasks,
 } = require("./task.controller");
 
 const taskRouter = express.Router();
 
 taskRouter.get("/", authenticateUser, getTasks);
+taskRouter.get("/user-tasks", authenticateUser, getCurrentUserTasks);
 taskRouter.patch("/:taskId/decline", authenticateUser, declineTask);
 taskRouter.patch("/:taskId/accept", authenticateUser, acceptTask);
 taskRouter.patch("/:taskId/pending", authenticateUser, pendingTask);

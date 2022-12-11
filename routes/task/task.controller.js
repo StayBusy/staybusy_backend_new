@@ -61,7 +61,8 @@ const getTasks = async (req, res) => {
   let { _id } = req.user;
   // const { isVerified, tags } = await User.findOne({ _id });
   const user = await User.findOne({ _id });
-  if(user === null) throw new UnauthenticatedError("User not found with the given id")
+  if (user === null)
+    throw new UnauthenticatedError("User not found with the given id");
 
   let { title, location, price, sort, priceFilter, tagFilter, date } =
     req.query;
@@ -212,7 +213,7 @@ const pendingTask = async (req, res) => {
     task.pending = true;
     task.completed = false;
     let taskNew = await task.save();
-  
+
     await User.findByIdAndUpdate(_id, {
       $addToSet: { completedTasks: taskId },
       $pull: { taskTaken: taskId },
@@ -299,10 +300,31 @@ const taskComplete = async (req, res) => {
   // await wallet.save()
 };
 
+const getCurrentUserTasks = async (req, res) => {
+  const { _id } = req.user;
+  let userTasks = await User.findOne({ _id })
+    .select("taskTaken completedTasks")
+    .populate("taskTaken")
+    .populate("completedTasks");
+
+  if(userTasks === null) {
+    throw new UnauthenticatedError("User not found")
+  }  
+
+    console.log(userTasks)
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "User Tasks",
+    onGoingTasks: userTasks?.taskTaken,
+    completedTasks: userTasks?.completedTasks
+  });
+};
+
 module.exports = {
   getTasks,
   declineTask,
   acceptTask,
   taskComplete,
   pendingTask,
+  getCurrentUserTasks,
 };

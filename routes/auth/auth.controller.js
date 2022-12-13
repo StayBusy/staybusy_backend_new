@@ -2,7 +2,7 @@ const { validationResult } = require("express-validator");
 const crypto = require("crypto");
 
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, UnauthenticatedError } = require("../../errors");
+const { BadRequestError, UnauthenticatedError, NotFoundError } = require("../../errors");
 const { createJWT } = require("../../utils/jwt");
 const User = require("../../models/User");
 const sendVerificationEmail = require("../../utils/sendVerficationEmail");
@@ -145,14 +145,17 @@ const login = async (req, res) => {
 
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
-
   if (!email) {
     throw new BadRequestError("Provide valid email");
   }
 
   const user = await User.findOne({ email });
 
-  if (user) {
+  if (user === null) {
+    throw new NotFoundError("User not found");
+  }
+
+  
     const passwordToken = crypto.randomBytes(70).toString("hex");
 
     const twentyMinutes = 1000 * 60 * 20;
@@ -164,7 +167,7 @@ const forgotPassword = async (req, res) => {
     if (process.env.NODE_ENV === "development") {
       origin = "http://localhost:3005";
     } else {
-      origin = "http://app.com";
+      origin = process.env.ORIGIN;
     }
 
     await sendResetPasswordEmail({
@@ -177,7 +180,6 @@ const forgotPassword = async (req, res) => {
     user.passwordToken = createHash(passwordToken);
     user.passwordTokenExpirationDate = passwordTokenExpirationDate;
     await user.save();
-  }
 
   res.status(StatusCodes.OK).json({
     status: true,
@@ -191,14 +193,14 @@ const resetPassword = async (req, res) => {
     throw new BadRequestError("All fields required");
   }
 
+
   const user = await User.findOne({ email });
 
   if (user) {
-    const currentUser = new Date();
-
+    const currentTime = new Date();
     if (
       user.passwordToken === createHash(token) &&
-      user.passwordTokenExpirationDate > currentUser
+      user.passwordTokenExpirationDate > currentTime
     ) {
       user.password = password;
       user.passwordToken = null;

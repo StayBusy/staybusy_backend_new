@@ -220,7 +220,7 @@ const updateProfileImage = async (req, res) => {
 };
 
 const addAccount = async (req, res) => {
-  const { country, bankName, bankAccountNumber, bankAccountName, sortCode } =
+  const { country, bankName, bankAccountNumber, bankAccountName, sortCode,  } =
     req.body;
   if (
     !country ||
@@ -241,9 +241,10 @@ const addAccount = async (req, res) => {
   // if (isAccountExists) {
   //   throw new BadRequestError("Account number exists");
   // }
+  let date = new Date()
   user.accountDetail = [
     // ...user.accountDetail,
-    { country, bankName, bankAccountNumber, bankAccountName, sortCode },
+    { country, bankName, bankAccountNumber, bankAccountName, sortCode, date },
   ];
 
   const updatedUser = await user.save();

@@ -14,10 +14,8 @@ const submissionRouter = express.Router();
 
 async function getSubmission(req, res) {
   const { _id } = req.user;
-  const submissions = await Submission.find({ submittedBy: _id }).populate(
-    "taskId"
-  ).select("taskId status createdAt");
-
+  // await Submission.updateMany({$set: {active:true}})
+  const submissions = await Submission.find({ submittedBy: _id, active: true }).populate("taskId");
   res.status(StatusCodes.OK).json({
     status: true,
     message: "success",
@@ -101,9 +99,12 @@ const saveSubmission = async (req, res) => {
       $addToSet: { completedTasks: taskId },
       $pull: { taskTaken: taskId },
     });
+  const submissions = await Submission.find({ submittedBy: _id, active: true }).populate("taskId");
+
     res.status(StatusCodes.OK).json({
       status: true,
       message: `Task completed`,
+      submissions
     });
   } else {
     throw new BadRequestError("Task not taken by you");
@@ -118,7 +119,27 @@ const saveSubmission = async (req, res) => {
   }
 };
 
+const deleteSubmission =async (req, res) => {
+  const { _id } = req.user;
+  const { submissionId } = req.params;
+
+  const submission = await Submission.findOne({ _id: submissionId })
+
+  if (_id.toString() !== submission.submittedBy.toString()) {
+    throw new BadRequestError("You cannot delete the task")
+  }
+
+  submission.active = false
+  await submission.save()
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: "submission deleted successfully"
+  })
+}
+
 submissionRouter.post("/:taskId", authenticateUser, saveSubmission);
 submissionRouter.get("/", authenticateUser, getSubmission);
+submissionRouter.delete("/:submissionId", authenticateUser, deleteSubmission);
 
 module.exports = submissionRouter;

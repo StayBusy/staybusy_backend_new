@@ -154,7 +154,7 @@ const updateProfileBasic = async (req, res) => {
   res.status(StatusCodes.OK).json({
     status: true,
     message: "Updated",
-    user: req.body,
+    user
   });
 };
 

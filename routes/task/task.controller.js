@@ -311,7 +311,6 @@ const getCurrentUserTasks = async (req, res) => {
     throw new UnauthenticatedError("User not found")
   }  
 
-    console.log(userTasks)
   res.status(StatusCodes.OK).json({
     status: true,
     message: "User Tasks",

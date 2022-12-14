@@ -18,8 +18,6 @@ async function getSubmission(req, res) {
     "taskId"
   ).select("taskId status createdAt");
 
-  console.log(submissions)
-
   res.status(StatusCodes.OK).json({
     status: true,
     message: "success",
@@ -56,16 +54,18 @@ const saveSubmission = async (req, res) => {
 
   const files = req.files?.uploadedFiles;
 
-  const task = await Task.findById(taskId);
+  if (files || urls) {
+     const task = await Task.findById(taskId);
 
   if (task === null) {
     throw new NotFoundError("Task not found. Contact Admin");
   }
 
   // Checking if the task has been completed before
-  // if (task.completed) {
-  //   throw new BadRequestError("The task has completed before now");
-  // }
+  if (task.completed) {
+    throw new BadRequestError("The task has completed before now");
+  }
+
   let filesArr = [];
   if (req.files !== null) {
     if (Array.isArray(files)) {
@@ -76,6 +76,7 @@ const saveSubmission = async (req, res) => {
       filesArr.push(await uploadFile(_id, files));
     }
   }
+
 
   await Submission.create({
     urls,
@@ -108,11 +109,13 @@ const saveSubmission = async (req, res) => {
     throw new BadRequestError("Task not taken by you");
   }
 
-  console.log("nothing");
-
   // const wallet =await Wallet.findOne({userId: user._id})
   // wallet.balance = +wallet.balance + +task.price
   // await wallet.save()
+    
+  } else {
+    throw new BadRequestError("Upload a file or submit a link");
+  }
 };
 
 submissionRouter.post("/:taskId", authenticateUser, saveSubmission);

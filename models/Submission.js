@@ -23,6 +23,10 @@ const SubmissionSchema = new Schema({
     default: "pending",
     enum: ["pending", "completed"],
   },
-});
+  active: {
+    type: Boolean,
+    default: true
+  }
+},{timestamps:true});
 
 module.exports = mongoose.model("Submission", SubmissionSchema);

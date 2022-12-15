@@ -49,6 +49,7 @@ const UserSchema = new Schema({
       bankAccountNumber: String,
       bankAccountName: String,
       sortCode: String,
+      date: Date
     },
   ],
   completed: { type: Boolean, default: false },

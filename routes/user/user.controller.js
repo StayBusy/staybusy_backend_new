@@ -12,6 +12,7 @@ const Submission = require("../../models/Submission");
 const { default: mongoose } = require("mongoose");
 
 const completeProfile = async (req, res) => {
+  console.log(req.body)
   const { _id } = req.user;
   const tags = req.body.tags.split(",");
 

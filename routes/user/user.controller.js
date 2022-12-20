@@ -124,7 +124,7 @@ const updateProfileBasic = async (req, res) => {
   const userObj = {};
   if (email) {
     const isEmailExist = await User.findOne({ email });
-
+    console.log(isEmailExist)
     if (email === isEmailExist.email) {
       userObj.email = email;
     } else if (isEmailExist) {
@@ -258,7 +258,6 @@ const addAccount = async (req, res) => {
 };
 
 const getSetting = async (req, res)=>{
-
   res.status(StatusCodes.OK).json({
     status: true,
     message: "setting"

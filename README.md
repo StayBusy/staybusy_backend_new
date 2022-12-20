@@ -94,10 +94,6 @@ npm install //for production
 
 ### The base Endpoint
 
-```javascript
-
-```
-
 ### Request Header for loggedIn user
 
 ```javascript
@@ -198,5 +194,112 @@ npm install //for production
     "period_available": "weekdays",
     "prefered_currency": "naira"
   }
+}
+```
+
+```javascript
+
+```
+
+### Update basic user profile using HTTP PATCH method
+
+- This route will update the user data: { email, firstname, lastname, phone_number }
+
+```javascript
+//Endpoint is
+
+/api/v1/users/basic 
+// Data to be sent
+{
+  email: tolu@yahoo.com,
+  firstname: 'kola', 
+  lastname: 'jide', 
+  phone_number: '09098776990'
+}
+
+-Response is
+-status code is 200 Ok
+
+{
+  "status": true,
+  "message": "Updated",
+  "user": {
+    "_id": "63a0c33e9bc6777fd77d2961",
+    "email": "tolu@yahoo.com",
+    "firstname": "kola",
+    "lastname": "jide",
+    "phone_number": '09098776990'
+      ...
+  }
+}
+```
+
+### Add and update account details using HTTP PATCH method
+
+- This route will allow the user to add or update the account details: { country, bankName, bankAccountNumber, bankAccountName, sortCode,  },
+
+```javascript
+//Endpoint is
+
+/api/v1/users/add-account
+// Data to be sent
+{ 
+    "country": "nigeria",
+    "bankName": "accessbank",
+    "bankAccountNumber": "947437340943",
+    "bankAccountName": "tolu kola",
+    "sortCode": "5454"
+}
+
+-Response is
+-status code is 200 Ok
+
+{
+  "status": true,
+  "message": "Account detail added",
+  "accountDetail": {
+    "_id": "63a0c33e9bc6777fd77d2961",
+    "accountDetail": [
+      {
+        "country": "nigeria",
+        "bankName": "accessbank",
+        "bankAccountNumber": "947437340943",
+        "bankAccountName": "tolu kola",
+        "sortCode": "5454",
+        "date": "2022-12-20T12:51:19.449Z",
+        "_id": "63a1afc7efa503ed50a2b79f"
+      }
+    ],
+    "country": "nigeria",
+    "__v": 1
+  }
+}
+```
+
+### Update tag(categories) using HTTP PATCH method
+
+- This route will allow the user to update the tag
+- String with comma separated
+
+```javascript
+//Endpoint is
+
+/api/v1/users/add-account
+// Data to be sent
+{
+  "tags": "frondend,mern,fullstack"
+}
+
+-Response is
+-status code is 200 Ok
+
+{
+  "status": true,
+  "message": "Updated",
+  "user": [
+    "frondend",
+    "mern",
+    " fullstack"
+  ]
 }
 ```

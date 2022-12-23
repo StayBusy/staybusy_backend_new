@@ -161,7 +161,7 @@ npm install //for production
 ```javascript
 //Endpoint is
 
-/api/v1/users/me 
+/api/v1/users/me
 // No data to be sent except 'request headers'
 
 -Response is
@@ -197,10 +197,6 @@ npm install //for production
 }
 ```
 
-```javascript
-
-```
-
 ### Update basic user profile using HTTP PATCH method
 
 - This route will update the user data: { email, firstname, lastname, phone_number }
@@ -208,12 +204,12 @@ npm install //for production
 ```javascript
 //Endpoint is
 
-/api/v1/users/basic 
+/api/v1/users/basic
 // Data to be sent
 {
   email: tolu@yahoo.com,
-  firstname: 'kola', 
-  lastname: 'jide', 
+  firstname: 'kola',
+  lastname: 'jide',
   phone_number: '09098776990'
 }
 
@@ -236,14 +232,14 @@ npm install //for production
 
 ### Add and update account details using HTTP PATCH method
 
-- This route will allow the user to add or update the account details: { country, bankName, bankAccountNumber, bankAccountName, sortCode,  },
+- This route will allow the user to add or update the account details: { country, bankName, bankAccountNumber, bankAccountName, sortCode, },
 
 ```javascript
 //Endpoint is
 
 /api/v1/users/add-account
 // Data to be sent
-{ 
+{
     "country": "nigeria",
     "bankName": "accessbank",
     "bankAccountNumber": "947437340943",
@@ -284,7 +280,7 @@ npm install //for production
 ```javascript
 //Endpoint is
 
-/api/v1/users/add-account
+/api/v1/users/update-tag
 // Data to be sent
 {
   "tags": "frondend,mern,fullstack"
@@ -301,5 +297,126 @@ npm install //for production
     "mern",
     " fullstack"
   ]
+}
+```
+
+### Update user profile image using HTTP PATCH method
+
+- This route will allow the user to update the tag
+
+````javascript
+//Endpoint is
+
+/api/v1/users/change-profile-image
+// Data to be sent
+{
+  "image": ```image here file here```
+}
+
+-Response is
+-status code is 200 Ok
+
+{
+  "status": true,
+  "message": "uploaded",
+  "user": {
+    image: 'upload/hdks...'
+    ...
+  }
+}
+````
+
+## All Tasks routes
+
+### Get all tasks using HTTP GET method
+
+- This route will get all tasks for a specific user
+
+```javascript
+//Endpoint is
+
+/api/v1/tasks
+// No data to be sent except 'request headers'
+
+-Response is
+-status code is 200 Ok
+
+{
+  status: true,
+  message: "Tasks",
+  result: tasks.length,
+  tasks: [
+    ...
+  ]
+}
+```
+
+### Decline task using HTTP PATCH method
+
+- This route will allow the user to decline task
+
+```javascript
+//Endpoint is
+
+/api/v1/tasks/<taskId>/decline
+// No data to be sent except 'request headers'
+
+-Response is
+-status code is 200 Ok
+
+{
+  "status": true,
+  "message": "Task declined: pleasures of the flesh (etsuraku)",
+  "task": {
+    "_id": "63a1ad5bacfe6b0772cbf9f1",
+  }
+}
+```
+
+### Accept a task using HTTP PATCH method
+
+- This route will allow the user to accept a task
+
+```javascript
+//Endpoint is
+
+/api/v1/tasks/<taskId>/accept
+// No data to be sent except 'request headers'
+
+-Response is
+-status code is 200 Ok
+
+{
+  "status": true,
+  "message": "Task Accepted "
+}
+```
+
+### Complete a task using HTTP PATCH method
+
+- This route will allow the user to accept a task
+- The route will accept a url or a file
+
+```javascript
+//Endpoint is
+
+/api/v1/tasks/<taskId>/complete
+// Data to be sent
+{
+  "url": "frondend,mern,fullstack"
+}
+
+OR
+
+{
+  "uploadedFiles": file to be uploaded
+}
+
+-Response is
+-status code is 200 Ok
+
+{
+  status: true,
+  message: `Task completed`,
 }
 ```

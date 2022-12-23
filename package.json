@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node  server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "format": "npx prettier --write ."
   },
   "author": "",
   "license": "ISC",
@@ -35,5 +36,8 @@
   },
   "engines": {
     "node": "14.17.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.1"
   }
 }

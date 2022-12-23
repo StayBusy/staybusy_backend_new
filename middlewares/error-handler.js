@@ -18,14 +18,14 @@ const errorHandlerMiddleware = (error, req, res, next) => {
 
   if (error.code && error.code === 11000) {
     customError.message = `Duplicate value entered for ${Object.keys(
-      error.keyValue
+      error.keyValue,
     )} field, please choose another value`;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
   if (error.name === 'ValidationError') {
     customError.message = Object.values(error.errors)
-      .map((item) => {
+      .map(item => {
         return item.message;
       })
       .join(',');

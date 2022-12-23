@@ -1,47 +1,40 @@
-const User = require("../../models/User");
-const { v4: uuidv4 } = require("uuid");
-const {
-  BadRequestError,
-  UnauthenticatedError,
-  NotFoundError,
-} = require("../../errors");
-const { StatusCodes } = require("http-status-codes");
-const path = require("path");
-const Wallet = require("../../models/Wallet");
-const Submission = require("../../models/Submission");
-const { default: mongoose } = require("mongoose");
+const User = require('../../models/User');
+const { v4: uuidv4 } = require('uuid');
+const { BadRequestError, UnauthenticatedError, NotFoundError } = require('../../errors');
+const { StatusCodes } = require('http-status-codes');
+const path = require('path');
+const Wallet = require('../../models/Wallet');
+const Submission = require('../../models/Submission');
+const { default: mongoose } = require('mongoose');
 
 const completeProfile = async (req, res) => {
-  console.log(req.body)
+  console.log(req.body);
   const { _id } = req.user;
-  const tags = req.body.tags.split(",");
+  const tags = req.body.tags.split(',');
 
   if (tags.length > 4) {
-    throw new BadRequestError("You can only choose 4 categories");
+    throw new BadRequestError('You can only choose 4 categories');
   }
 
   if (req.files === null) {
-    throw new BadRequestError("Please upload your image");
+    throw new BadRequestError('Please upload your image');
   }
 
   const userImage = req.files.image;
-  if (!userImage.mimetype.includes("image")) {
-    throw new BadRequestError("Please upload a valid image");
+  if (!userImage.mimetype.includes('image')) {
+    throw new BadRequestError('Please upload a valid image');
   }
 
   // max upload is 2 megabytes
   const maxSize = 2000000;
 
   if (userImage.size > maxSize) {
-    throw new BadRequestError("Exceeded allowed image max size");
+    throw new BadRequestError('Exceeded allowed image max size');
   }
 
   let imageId = `${uuidv4()}-${req.body.firstname}`;
 
-  const imagePath = path.join(
-    __dirname,
-    "../../uploads/" + `${imageId}-${userImage.name}`
-  );
+  const imagePath = path.join(__dirname, '../../uploads/' + `${imageId}-${userImage.name}`);
 
   const userVerified = await User.findById(_id);
 
@@ -51,7 +44,7 @@ const completeProfile = async (req, res) => {
 
   // To be sure that user has verified it's email
   if (userVerified.isVerified !== true) {
-    throw new UnauthenticatedError("You have not verified your email");
+    throw new UnauthenticatedError('You have not verified your email');
   }
 
   await userImage.mv(imagePath);
@@ -68,7 +61,7 @@ const completeProfile = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     status: true,
-    message: "Profile completed",
+    message: 'Profile completed',
     user,
   });
 };
@@ -85,35 +78,31 @@ const getMe = async (req, res) => {
   const submission = await Submission.aggregate([
     {
       $match: {
-        status: "completed",
+        status: 'completed',
         submittedBy: mongoose.Types.ObjectId(_id),
       },
     },
-    { $group: { _id: null, price: { $sum: "$price" } } },
+    { $group: { _id: null, price: { $sum: '$price' } } },
   ]);
 
-  let user = await User.findOne({ _id })
-    .populate("taskTaken")
-    .populate("completedTasks");
+  let user = await User.findOne({ _id }).populate('taskTaken').populate('completedTasks');
   if (user === null) {
-    throw new UnauthenticatedError("User not found");
+    throw new UnauthenticatedError('User not found');
   }
 
-  let userWallet
+  let userWallet;
 
-  if(wallet !== null) {
-
+  if (wallet !== null) {
     wallet.balance = submission[0]?.price.toFixed(2);
-   userWallet = await wallet.save();
+    userWallet = await wallet.save();
   }
-
 
   user = user.toObject();
   user.wallet = userWallet?.balance;
 
   res.status(StatusCodes.OK).json({
     status: true,
-    message: "User data",
+    message: 'User data',
     user,
   });
 };
@@ -124,11 +113,11 @@ const updateProfileBasic = async (req, res) => {
   const userObj = {};
   if (email) {
     const isEmailExist = await User.findOne({ email });
-    console.log(isEmailExist)
+    console.log(isEmailExist);
     if (email === isEmailExist.email) {
       userObj.email = email;
     } else if (isEmailExist) {
-      throw new BadRequestError("Email is not avaliable");
+      throw new BadRequestError('Email is not avaliable');
     } else {
       userObj.email = email;
     }
@@ -149,31 +138,31 @@ const updateProfileBasic = async (req, res) => {
   });
 
   if (user === null) {
-    throw new UnauthenticatedError("User not found");
+    throw new UnauthenticatedError('User not found');
   }
 
   res.status(StatusCodes.OK).json({
     status: true,
-    message: "Updated",
-    user
+    message: 'Updated',
+    user,
   });
 };
 
 const updateTags = async (req, res) => {
   let { tags } = req.body;
-  tags = tags.split(",");
+  tags = tags.split(',');
   const user = await User.findByIdAndUpdate(
     req.user._id,
     { tags },
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   res.status(StatusCodes.OK).json({
     status: true,
-    message: "Updated",
+    message: 'Updated',
     user: tags,
   });
 };
@@ -182,27 +171,24 @@ const updateProfileImage = async (req, res) => {
   const { _id } = req.user;
 
   if (req.files === null) {
-    throw new BadRequestError("Please upload image");
+    throw new BadRequestError('Please upload image');
   }
 
   const userImage = req.files.image;
-  if (!userImage.mimetype.includes("image")) {
-    throw new BadRequestError("Please upload a valid image");
+  if (!userImage.mimetype.includes('image')) {
+    throw new BadRequestError('Please upload a valid image');
   }
 
   // max upload is 2 megabytes
   const maxSize = 2000000;
 
   if (userImage.size > maxSize) {
-    throw new BadRequestError("Exceeded allowed image max size");
+    throw new BadRequestError('Exceeded allowed image max size');
   }
 
   let imageId = `${uuidv4()}-${req.body.firstname}`;
 
-  const imagePath = path.join(
-    __dirname,
-    "../../uploads/" + `${imageId}-${userImage.name}`
-  );
+  const imagePath = path.join(__dirname, '../../uploads/' + `${imageId}-${userImage.name}`);
 
   await userImage.mv(imagePath);
 
@@ -215,34 +201,25 @@ const updateProfileImage = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     status: true,
-    message: "uploaded",
+    message: 'uploaded',
     user,
   });
 };
 
 const addAccount = async (req, res) => {
-  const { country, bankName, bankAccountNumber, bankAccountName, sortCode,  } =
-    req.body;
-  if (
-    !country ||
-    !bankName ||
-    !bankAccountName ||
-    !bankAccountNumber ||
-    !sortCode
-  ) {
-    throw new BadRequestError("All fields required");
+  const { country, bankName, bankAccountNumber, bankAccountName, sortCode } = req.body;
+  if (!country || !bankName || !bankAccountName || !bankAccountNumber || !sortCode) {
+    throw new BadRequestError('All fields required');
   }
 
-  const user = await User.findById(req.user._id).select(
-    "country accountDetail"
-  );
+  const user = await User.findById(req.user._id).select('country accountDetail');
   // const isAccountExists = user.accountDetail.find(
   //   (acc) => acc.bankAccountNumber === bankAccountNumber
   // );
   // if (isAccountExists) {
   //   throw new BadRequestError("Account number exists");
   // }
-  let date = new Date()
+  let date = new Date();
   user.accountDetail = [
     // ...user.accountDetail,
     { country, bankName, bankAccountNumber, bankAccountName, sortCode, date },
@@ -252,17 +229,19 @@ const addAccount = async (req, res) => {
 
   res.status(StatusCodes.CREATED).json({
     status: true,
-    message: "Account detail added",
+    message: 'Account detail added',
     accountDetail: updatedUser,
   });
 };
 
-const getSetting = async (req, res)=>{
+const getSetting = async (req, res) => {
   res.status(StatusCodes.OK).json({
     status: true,
-    message: "setting"
-  })
-}
+    message: 'setting',
+  });
+};
+
+const withdraw = async (req, res) => {};
 
 module.exports = {
   completeProfile,
@@ -271,5 +250,6 @@ module.exports = {
   updateTags,
   updateProfileImage,
   addAccount,
-  getSetting
+  getSetting,
+  withdraw,
 };

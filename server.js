@@ -1,24 +1,24 @@
-require("dotenv").config();
-require("express-async-errors");
+require('dotenv').config();
+require('express-async-errors');
 
-const express = require("express");
-const path = require("path");
-const cors = require("cors");
-const morgan = require("morgan");
-const fileUpload = require("express-fileupload");
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+const morgan = require('morgan');
+const fileUpload = require('express-fileupload');
 
 // importing session and flash and cookieParse and morgan
 // const session = require("express-session");
 // const cookieParser = require("cookie-parser");
 
 // mongoDB connection
-const connectDB = require("./config/db");
+const connectDB = require('./config/db');
 
 const app = express();
 
 //cors
 app.use(cors());
-app.use(express.json({limit:"2000kb"}));
+app.use(express.json({ limit: '2000kb' }));
 app.use(fileUpload());
 
 // view engine setup
@@ -26,9 +26,9 @@ app.use(fileUpload());
 // app.set("view engine", "ejs");
 
 // where the pictures will be stored
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/api/v1/uploads", express.static("uploads"));
-app.use("/api/v1/submissions", express.static("submissions"));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/v1/uploads', express.static('uploads'));
+app.use('/api/v1/submissions', express.static('submissions'));
 
 // use session and flash and logger and cookieParser
 // app.use(
@@ -40,8 +40,8 @@ app.use("/api/v1/submissions", express.static("submissions"));
 //   })
 // );
 
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 }
 
 // to show the index view of the ejs and the app
@@ -49,21 +49,21 @@ if (process.env.NODE_ENV === "development") {
 // app.use("/user", UserRouter);
 
 // App Routes
-app.use("/api/v1/auth", require("./routes/auth/auth.routes"));
-app.use("/api/v1/users", require("./routes/user/user.routes"));
-app.use("/api/v1/tasks", require("./routes/task/task.routes"));
-app.use("/api/v1/tags", require("./routes/tag/tags.routes"));
-app.use("/api/v1/submissions", require("./routes/submission/submission.routes"));
+app.use('/api/v1/auth', require('./routes/auth/auth.routes'));
+app.use('/api/v1/users', require('./routes/user/user.routes'));
+app.use('/api/v1/tasks', require('./routes/task/task.routes'));
+app.use('/api/v1/tags', require('./routes/tag/tags.routes'));
+app.use('/api/v1/submissions', require('./routes/submission/submission.routes'));
 
 // APP ErrorHandler
-const notFoundMiddleware = require("./middlewares/not-found");
-const errorHandlerMiddleware = require("./middlewares/error-handler");
+const notFoundMiddleware = require('./middlewares/not-found');
+const errorHandlerMiddleware = require('./middlewares/error-handler');
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
 let DB;
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === 'development') {
   DB = process.env.MONGODB_LOCAL;
 } else {
   DB = process.env.MONGODB_URI;
@@ -73,7 +73,7 @@ const start = async () => {
   const PORT = process.env.PORT || 3005;
   try {
     await connectDB(DB);
-    console.log("DB connected");
+    console.log('DB connected');
     app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
   } catch (error) {
     console.log(error);

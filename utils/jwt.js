@@ -8,7 +8,7 @@ const createJWT = ({ email, id }) => {
   return token;
 };
 
-const isTokenValid = async (token) => {
+const isTokenValid = async token => {
   return await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 };
 

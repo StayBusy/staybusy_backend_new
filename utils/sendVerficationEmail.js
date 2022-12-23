@@ -1,11 +1,6 @@
 const sendEmail = require('./sendEmail');
 
-const sendVerificationEmail = async ({
-  name,
-  email,
-  verificationToken,
-  origin,
-}) => {
+const sendVerificationEmail = async ({ name, email, verificationToken, origin }) => {
   const verifyEmail = `${origin}/auth/verify-user?token=${verificationToken}&email=${email}`;
 
   const message = `<p>Please confirm your email by clicking on the following link : 

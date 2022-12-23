@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const Schema = mongoose.Schema;
 
@@ -25,7 +25,7 @@ const UserSchema = new Schema({
   },
   email: {
     type: String,
-    required: [true, "email is required"],
+    required: [true, 'email is required'],
     unique: true,
     lowercase: true,
     trim: true,
@@ -49,20 +49,20 @@ const UserSchema = new Schema({
       bankAccountNumber: String,
       bankAccountName: String,
       sortCode: String,
-      date: Date
+      date: Date,
     },
   ],
   completed: { type: Boolean, default: false },
-  taskTaken: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
-  completedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
-  declinedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Task" }],
+  taskTaken: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
+  completedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
+  declinedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
   image: String,
   passwordToken: { type: String },
   passwordTokenExpirationDate: { type: Date },
 });
 
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
     return next();
   }
 
@@ -76,6 +76,6 @@ UserSchema.methods.comparePassword = async function (canditatePassword) {
   return isMatch;
 };
 
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model('User', UserSchema);
 
 module.exports = User;

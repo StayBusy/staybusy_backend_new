@@ -6,6 +6,8 @@ const path = require('path');
 const Wallet = require('../../models/Wallet');
 const Submission = require('../../models/Submission');
 const { default: mongoose } = require('mongoose');
+const { send } = require('process');
+const sendEmailToAdmin = require('../../utils/sendEmailToAdmin');
 
 const completeProfile = async (req, res) => {
   console.log(req.body);
@@ -91,6 +93,7 @@ const getMe = async (req, res) => {
   }
 
   let userWallet;
+  console.log(96, wallet);
 
   if (wallet !== null) {
     wallet.balance = submission[0]?.price.toFixed(2);
@@ -241,7 +244,42 @@ const getSetting = async (req, res) => {
   });
 };
 
-const withdraw = async (req, res) => {};
+const withdraw = async (req, res) => {
+  const { _id } = req.user;
+  const amount = parseFloat(req.body.amount);
+  const bankDetail = req.body.bankDetail;
+  if (!amount || !bankDetail) {
+    throw new BadRequestError('Amount and Bank detail required');
+  }
+  // const _id = '63a0c33e9bc6777fd77d2961';
+
+  const date = new Date();
+  const wallet = await Wallet.findOne({ userId: _id });
+
+  // console.log(wallet.balance);
+
+  if (amount > wallet.balance) {
+    throw new BadRequestError('You cannot withdraw more than your balance');
+  }
+
+  if (wallet.processing) {
+    throw new BadRequestError('You still have pending payment');
+  }
+
+  wallet.withdrawals.push({ amount, date, bankDetail });
+  wallet.processing = true;
+
+  const userWallet = await wallet.save();
+
+  let user = await User.findOne({ _id });
+
+  sendEmailToAdmin({ amount, name: `${user.firstname} ${user.lastname}`, id: _id });
+
+  res.status(StatusCodes.OK).json({
+    status: true,
+    message: 'Successful, Waiting for approval',
+  });
+};
 
 module.exports = {
   completeProfile,

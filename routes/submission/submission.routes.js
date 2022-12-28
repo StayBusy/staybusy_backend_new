@@ -81,7 +81,7 @@ const saveSubmission = async (req, res) => {
     });
 
     // I will remove later
-    const wallet = await Wallet.findOne({ submittedBy: _id });
+    const wallet = await Wallet.findOne({ userId: _id });
     if (!wallet) {
       await Wallet.create({ userId: _id, balance: 0 });
     }

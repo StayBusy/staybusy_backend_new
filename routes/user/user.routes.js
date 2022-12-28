@@ -27,6 +27,6 @@ userRouter.patch('/basic', authenticateUser, updateProfileBasic);
 userRouter.patch('/add-account', authenticateUser, addAccount);
 userRouter.patch('/update-tag', authenticateUser, updateTags);
 userRouter.patch('/change-profile-image', authenticateUser, updateProfileImage);
-userRouter.patch('/withdraw', withdraw);
+userRouter.post('/withdraw', authenticateUser, withdraw);
 
 module.exports = userRouter;
